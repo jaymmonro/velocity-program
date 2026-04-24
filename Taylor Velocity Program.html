@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taylor Monroe | Velocity Training Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:#0a0a0a; --dark:#111215; --card:#161a20; --card2:#1c2028;
+  --border:rgba(255,255,255,0.07); --gold:#e8b84b; --gold-dim:rgba(232,184,75,0.15);
+  --teal:#3ecfb2; --teal-dim:rgba(62,207,178,0.12); --red:#e85c5c;
+  --red-dim:rgba(232,92,92,0.12); --text:#e8eaf0; --muted:#7a8090;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--black);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+header{background:linear-gradient(135deg,#0e1318,#111820);border-bottom:1px solid var(--border);padding:22px 36px;display:flex;align-items:center;justify-content:space-between;}
+.logo-block{display:flex;align-items:center;gap:16px;}
+.jersey{width:50px;height:50px;background:linear-gradient(135deg,var(--teal),#28a88e);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:22px;color:var(--black);box-shadow:0 0 18px rgba(62,207,178,0.25);}
+.player-name{font-family:'Barlow Condensed',sans-serif;font-size:28px;letter-spacing:2px;line-height:1;}
+.player-sub{font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:4px;}
+.header-stats{display:flex;gap:28px;}
+.hstat{text-align:right;}
+.hstat-val{font-family:'Barlow Condensed',sans-serif;font-size:26px;letter-spacing:1px;line-height:1;}
+.hstat-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px;}
+.c-gold{color:var(--gold);} .c-teal{color:var(--teal);} .c-text{color:var(--text);}
+
+.tabs{display:flex;background:var(--dark);border-bottom:1px solid var(--border);padding:0 36px;position:sticky;top:0;z-index:100;}
+.tab{padding:14px 20px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap;user-select:none;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+
+.panel{display:none;} .panel.active{display:block;}
+main{padding:28px 36px;max-width:1400px;margin:0 auto;}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;}
+.card-lbl{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:10px;font-weight:600;}
+.prog-bar{background:rgba(255,255,255,0.06);border-radius:100px;height:10px;overflow:hidden;margin:10px 0 8px;}
+.prog-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal),var(--gold));}
+.prog-lbls{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
+
+/* DASHBOARD */
+.vel-hero{display:grid;grid-template-columns:290px 1fr;gap:18px;margin-bottom:22px;}
+.gauge-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;display:flex;flex-direction:column;align-items:center;}
+.gauge-title{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:14px;}
+.vel-big{font-family:'Barlow Condensed',sans-serif;font-size:68px;color:var(--gold);line-height:1;letter-spacing:2px;margin-top:14px;}
+.vel-unit{font-size:12px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:1.5px;}
+.vel-goal{margin-top:14px;background:var(--teal-dim);border:1px solid rgba(62,207,178,0.2);border-radius:8px;padding:9px 14px;font-size:12px;color:var(--teal);font-weight:500;}
+.prog-cards{display:grid;grid-template-rows:auto auto 1fr;gap:14px;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.stat-lbl{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px;font-weight:600;}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:38px;letter-spacing:1px;line-height:1;}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+.sec-lbl{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:600;margin-bottom:12px;}
+.week-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.wk-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;}
+.wk-card.cur{border-color:var(--teal);background:rgba(62,207,178,0.05);}
+.wk-num{font-family:'Barlow Condensed',sans-serif;font-size:24px;line-height:1;}
+.wk-ph{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;font-weight:700;}
+.ph-f{color:#7ab8e8;} .ph-b{color:var(--gold);} .ph-l{color:#e8845c;} .ph-p{color:#c46ee8;}
+.wk-dots{display:flex;gap:5px;margin-top:10px;}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);cursor:pointer;transition:all 0.15s;}
+.dot:hover{border-color:var(--teal);}
+.dot.on{background:var(--teal);border-color:var(--teal);}
+.cur-badge{position:absolute;top:7px;right:8px;font-size:8px;letter-spacing:1.5px;color:var(--teal);font-weight:700;}
+
+/* PROGRAM */
+.phase-block{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:18px;}
+.phase-tag{display:inline-block;padding:3px 12px;border-radius:100px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;}
+.tf{background:rgba(122,184,232,0.15);color:#7ab8e8;} .tb{background:var(--gold-dim);color:var(--gold);} .tl{background:rgba(232,132,92,0.12);color:#e8845c;} .tp{background:rgba(196,110,232,0.12);color:#c46ee8;}
+.phase-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:6px;}
+.phase-desc{font-size:13px;color:var(--muted);line-height:1.6;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:14px;}
+.wk-badge{display:inline-block;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:1px;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:2px 10px;margin-bottom:6px;}
+.wk-note{font-size:12px;color:var(--muted);font-style:italic;margin-bottom:12px;}
+.sess-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.sess-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.sess-hdr{padding:11px 14px;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.sess-day{font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:1px;}
+.sess-dur{font-size:11px;color:var(--muted);background:rgba(255,255,255,0.05);padding:2px 7px;border-radius:4px;font-family:'DM Mono',monospace;}
+.sess-body{padding:12px 14px;}
+.drill{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:flex-start;}
+.drill:last-child{border-bottom:none;}
+.bb{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;flex-shrink:0;margin-top:2px;font-family:'DM Mono',monospace;}
+.ba{background:rgba(196,110,232,0.15);color:#c46ee8;border:1px solid rgba(196,110,232,0.3);}
+.bu{background:rgba(62,207,178,0.15);color:var(--teal);border:1px solid rgba(62,207,178,0.3);}
+.br{background:rgba(255,255,255,0.08);color:var(--text);border:1px solid var(--border);}
+.bo{background:rgba(232,184,75,0.12);color:var(--gold);border:1px solid rgba(232,184,75,0.25);}
+.bh{background:rgba(232,92,92,0.12);color:var(--red);border:1px solid rgba(232,92,92,0.25);}
+.bt{background:rgba(196,110,232,0.15);color:#c46ee8;border:1px solid rgba(196,110,232,0.3);}
+.drill-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.drill-det{font-size:12px;color:var(--muted);line-height:1.5;}
+.yt{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--teal);text-decoration:none;margin-top:4px;padding:2px 7px;background:var(--teal-dim);border-radius:4px;border:1px solid rgba(62,207,178,0.2);}
+.yt:hover{background:rgba(62,207,178,0.2);}
+
+/* WEEK BY WEEK */
+.sched-table{width:100%;border-collapse:collapse;}
+.sched-table th{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;}
+.sched-table td{padding:14px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;vertical-align:top;}
+.sched-table tr:last-child td{border-bottom:none;}
+.sched-table tr:hover td{background:rgba(255,255,255,0.015);}
+.wn{font-family:'Barlow Condensed',sans-serif;font-size:26px;line-height:1;}
+.wf{font-weight:500;color:var(--text);margin-bottom:4px;font-size:13px;}
+.wv{font-size:12px;color:var(--muted);}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.chip{font-size:11px;padding:2px 9px;border-radius:100px;font-family:'DM Mono',monospace;}
+.cu{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(62,207,178,0.2);}
+.cr{background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border);}
+.co{background:var(--gold-dim);color:var(--gold);border:1px solid rgba(232,184,75,0.2);}
+.ch{background:var(--red-dim);color:var(--red);border:1px solid rgba(232,92,92,0.2);}
+
+/* LOG */
+.log-form{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;margin-bottom:18px;align-items:end;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fl{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;}
+.fi{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:14px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s;}
+.fi:focus{border-color:var(--teal);}
+.btn{background:linear-gradient(135deg,var(--teal),#28a88e);border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;color:var(--black);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.btn:hover{opacity:0.88;}
+.log-tbl{width:100%;border-collapse:collapse;}
+.log-tbl th{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);font-weight:600;}
+.log-tbl td{padding:12px 13px;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle;}
+.log-tbl tr:last-child td{border-bottom:none;}
+.vnum{font-family:'Barlow Condensed',sans-serif;font-size:22px;}
+.gbadge{font-size:12px;padding:2px 7px;border-radius:4px;font-weight:600;}
+.gup{background:rgba(62,207,178,0.15);color:var(--teal);}
+.gsame{background:rgba(255,255,255,0.06);color:var(--muted);}
+.empty{text-align:center;padding:36px;color:var(--muted);font-style:italic;font-size:14px;}
+.mprog{background:rgba(255,255,255,0.06);border-radius:100px;height:6px;width:140px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px;}
+.mprog-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal),var(--gold));}
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;margin-top:18px;}
+.chart-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;letter-spacing:1.5px;margin-bottom:3px;}
+.chart-sub{font-size:13px;color:var(--muted);margin-bottom:18px;}
+
+/* TIPS */
+.tips-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.tip-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;}
+.tip-icon{font-size:24px;margin-bottom:10px;}
+.tip-title{font-family:'Barlow Condensed',sans-serif;font-size:19px;letter-spacing:1px;margin-bottom:7px;}
+.tip-body{font-size:13px;color:var(--muted);line-height:1.7;}
+.tip-body strong{color:var(--text);}
+.yt-res{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px;}
+.yt-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px;text-decoration:none;display:block;transition:border-color 0.2s;}
+.yt-card:hover{border-color:rgba(62,207,178,0.4);}
+.yt-tag{font-size:11px;color:var(--teal);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px;font-weight:700;}
+.yt-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.yt-desc{font-size:12px;color:var(--muted);line-height:1.5;}
+.alert{background:var(--teal-dim);border:1px solid rgba(62,207,178,0.25);border-radius:10px;padding:12px 15px;font-size:13px;color:var(--teal);margin-bottom:18px;font-weight:500;}
+.sec-title{font-family:'Barlow Condensed',sans-serif;font-size:20px;letter-spacing:1.5px;margin-bottom:12px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-block">
+    <div class="jersey">#6</div>
+    <div>
+      <div class="player-name">Taylor Monroe</div>
+      <div class="player-sub">Michigan Sabercats 13U Foster &nbsp;|&nbsp; CF / Utility &nbsp;|&nbsp; Class of 2030</div>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><div class="hstat-val c-gold">51.8</div><div class="hstat-lbl">Baseline MPH</div></div>
+    <div class="hstat"><div class="hstat-val c-teal">61.8</div><div class="hstat-lbl">Goal MPH</div></div>
+    <div class="hstat"><div class="hstat-val c-text">10W</div><div class="hstat-lbl">Program Length</div></div>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" id="tab-dashboard">Dashboard</div>
+  <div class="tab" id="tab-program">Program</div>
+  <div class="tab" id="tab-schedule">Week-by-Week</div>
+  <div class="tab" id="tab-log">Velocity Log</div>
+  <div class="tab" id="tab-tips">Arm Care + Tips</div>
+</div>
+
+<main>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="panel active" id="panel-dashboard">
+  <div class="vel-hero">
+    <div class="gauge-card">
+      <div class="gauge-title">Current Velocity</div>
+      <svg viewBox="0 0 200 110" width="200" height="110" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="gg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3ecfb2"/><stop offset="100%" stop-color="#e8b84b"/></linearGradient></defs>
+        <path d="M 20 95 A 80 80 0 0 1 180 95" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10" stroke-linecap="round"/>
+        <path d="M 20 95 A 80 80 0 0 1 97 16" fill="none" stroke="url(#gg)" stroke-width="10" stroke-linecap="round"/>
+        <circle cx="162" cy="37" r="5" fill="none" stroke="#3ecfb2" stroke-width="2"/>
+        <text x="150" y="30" font-size="9" fill="#3ecfb2" font-family="DM Mono">GOAL</text>
+        <text x="12" y="108" font-size="10" fill="#7a8090" font-family="DM Mono">40</text>
+        <text x="86" y="13" font-size="10" fill="#7a8090" font-family="DM Mono">55</text>
+        <text x="174" y="108" font-size="10" fill="#7a8090" font-family="DM Mono">70</text>
+        <circle cx="100" cy="95" r="5" fill="#e8b84b"/>
+      </svg>
+      <div class="vel-big">51.8</div>
+      <div class="vel-unit">mph baseline</div>
+      <div class="vel-goal">&#8593; Target: 61.8 mph by end of summer</div>
+    </div>
+    <div class="prog-cards">
+      <div class="card"><div class="card-lbl">Velocity Progress to Goal</div><div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div><div class="prog-lbls"><span style="color:var(--gold)">51.8 mph (baseline)</span><span>Goal: 61.8 mph</span></div></div>
+      <div class="card"><div class="card-lbl">Program Completion</div><div class="prog-bar"><div class="prog-fill" style="width:0%;background:linear-gradient(90deg,#7ab8e8,var(--teal))"></div></div><div class="prog-lbls"><span>Week 0 of 10</span><span style="color:var(--teal)">0% Complete</span></div></div>
+      <div class="card"><div class="card-lbl">Current Phase</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:22px;color:#7ab8e8;letter-spacing:1px;">Phase 1</div><div style="font-size:14px;font-weight:600;color:var(--text);margin-top:3px;">Foundation + Mechanics</div><div style="font-size:12px;color:var(--muted);margin-top:3px;">Weeks 1-3: Arm path, crow-hop, underload intro</div></div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-lbl">MPH Needed</div><div class="stat-val c-gold">+10</div><div class="stat-sub">Over 10 weeks</div></div>
+    <div class="stat-box"><div class="stat-lbl">Sessions / Week</div><div class="stat-val c-teal">4</div><div class="stat-sub">~30 min each</div></div>
+    <div class="stat-box"><div class="stat-lbl">Total Sessions</div><div class="stat-val c-text">40</div><div class="stat-sub">Across 4 phases</div></div>
+    <div class="stat-box"><div class="stat-lbl">Ball Weights</div><div class="stat-val c-text">5</div><div class="stat-sub">100g to 450g</div></div>
+  </div>
+  <div class="sec-lbl">Weekly Check-In — click each dot to mark a session complete, click again to undo</div>
+  <div class="week-grid" id="week-grid"></div>
+</div>
+
+<!-- ===== PROGRAM ===== -->
+<div class="panel" id="panel-program">
+
+  <div class="phase-block">
+    <div class="phase-tag tf">Phase 1</div>
+    <div class="phase-title">Foundation + Arm Path</div>
+    <div class="phase-desc">Weeks 1-3. Build the mechanical foundation before loading. Focus is 100% on arm path efficiency, crow-hop footwork, hip-shoulder separation, and glove arm action. Introduce underload (100g) to reinforce fast arm speed without load stress.</div>
+    <div class="wk-badge">WEEKS 1-3</div>
+    <div class="wk-note">4 sessions per week, ~30 minutes. Recovery emphasis.</div>
+    <div class="sess-grid">
+      <div class="sess-card">
+        <div class="sess-hdr"><div class="sess-day">Day A &mdash; Mon / Thu</div><div class="sess-dur">30 MIN</div></div>
+        <div class="sess-body">
+          <div class="drill"><div class="bb ba">ARM</div><div><div class="drill-name">Arm Care Warmup</div><div class="drill-det">Band external rotations, shoulder circles, wrist mobility. 5 min.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+arm+care+warmup+rotator+cuff+band" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bu">100g</div><div><div class="drill-name">Wrist Flip Progression</div><div class="drill-det">Knees, seated, then standing. 3x10 each. Pronation and finger pressure through release.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+wrist+flip+drill+velocity+throwing" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bu">100g</div><div><div class="drill-name">Pivot Pickoff Drill (Austin Wasserman HLT)</div><div class="drill-det">Plant feet, isolate hip-shoulder separation. 3x8 at 70% effort. Scapular load checkpoint.</div><a class="yt" href="https://www.youtube.com/results?search_query=Austin+Wasserman+pivot+pickoff+softball+high+level+throwing" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Flat-Ground Crow-Hop Throws</div><div class="drill-det">Start 30 ft, build to 60 ft. 3x10. Uphill shoulders, weight transfer, glove pull.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+outfield+crow+hop+throwing+mechanics" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb ba">REC</div><div><div class="drill-name">Post-Session Recovery</div><div class="drill-det">Band reverse flys 2x15, shoulder stretches, forearm stretching. 5 min.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+shoulder+recovery+stretches+after+throwing" target="_blank">&#9654; YouTube</a></div></div>
+        </div>
+      </div>
+      <div class="sess-card">
+        <div class="sess-hdr"><div class="sess-day">Day B &mdash; Tue / Fri</div><div class="sess-dur">30 MIN</div></div>
+        <div class="sess-body">
+          <div class="drill"><div class="bb ba">ARM</div><div><div class="drill-name">Arm Care Warmup</div><div class="drill-det">Same routine as Day A. Consistency matters.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+arm+care+warmup+rotator+cuff+band" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bu">100g</div><div><div class="drill-name">Lawnmower Drill</div><div class="drill-det">Arm path checkpoint at foot strike. 3x8. Hand slightly above parallel at stride. Glove arm pull-through.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+lawnmower+drill+throwing+arm+path+mechanics" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Long Toss Progression</div><div class="drill-det">Start 45 ft, add 5 ft every 4-5 throws. Low line drive trajectory. 15-20 throws total.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+outfield+long+toss+progression+arm+strength" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Swing Shuffle Long Toss</div><div class="drill-det">Lateral hip explosion into throw at max distance. 5-6 throws. Rhythmic body use into arm.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+swing+shuffle+long+toss+drill+outfield" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb ba">REC</div><div><div class="drill-name">Post-Session Stretches</div><div class="drill-det">Cross-body shoulder, sleeper stretch, chest opener. 5 min.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+sleeper+stretch+cross+body+shoulder+after+throwing" target="_blank">&#9654; YouTube</a></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-block">
+    <div class="phase-tag tb">Phase 2</div>
+    <div class="phase-title">Build + Overload Introduction</div>
+    <div class="phase-desc">Weeks 4-6. Mechanics are grooved. Introduce overload balls on a 2:1 ratio. Underload reinforces arm speed. Expect first measurable velocity gains of +1-3 mph.</div>
+    <div class="wk-badge">WEEKS 4-6</div>
+    <div class="wk-note">Radar recommended. Velocity check at end of Week 6.</div>
+    <div class="sess-grid">
+      <div class="sess-card">
+        <div class="sess-hdr"><div class="sess-day">Day A &mdash; Mon / Thu (Strength)</div><div class="sess-dur">30 MIN</div></div>
+        <div class="sess-body">
+          <div class="drill"><div class="bb ba">ARM</div><div><div class="drill-name">Arm Care + Band Work</div><div class="drill-det">External rotations, internal rotations, Ws. 5 min.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+resistance+band+shoulder+arm+care+warmup" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bu">100g</div><div><div class="drill-name">Underload Speed Throws</div><div class="drill-det">3x8 at 90-100% intent. Max arm speed. Trains fast-twitch recruitment.</div><a class="yt" href="https://www.youtube.com/results?search_query=underload+overload+softball+throwing+velocity+weighted+ball" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bo">250g</div><div><div class="drill-name">Overload Pivot Throws</div><div class="drill-det">2x8 at 80% effort. External rotation load. Arm path must stay clean.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+overload+weighted+ball+pivot+throw+drill" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Full Crow-Hop Throws</div><div class="drill-det">2x8 at maximum intent. Measure if radar available.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+outfield+crow+hop+max+intent+velocity+training" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bh">450g</div><div><div class="drill-name">Heavy Wall Rebounds (Wk 5+)</div><div class="drill-det">Throw into wall at close range. 3x6. Builds shoulder deceleration strength.</div><a class="yt" href="https://www.youtube.com/results?search_query=plyocare+wall+rebounds+arm+strength+softball+baseball" target="_blank">&#9654; YouTube</a></div></div>
+        </div>
+      </div>
+      <div class="sess-card">
+        <div class="sess-hdr"><div class="sess-day">Day B &mdash; Tue / Fri (Speed + Distance)</div><div class="sess-dur">30 MIN</div></div>
+        <div class="sess-body">
+          <div class="drill"><div class="bb ba">ARM</div><div><div class="drill-name">Arm Care Warmup</div><div class="drill-det">Same protocol. Never skip.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+arm+care+warmup+rotator+cuff+band" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bu">100g</div><div><div class="drill-name">Pivot Pickoff Speed Reps</div><div class="drill-det">3x8 at max intent. Lighter ball allows full arm speed. Glove pull and hip fire cues.</div><a class="yt" href="https://www.youtube.com/results?search_query=Austin+Wasserman+pivot+pickoff+softball+high+level+throwing" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Long Toss Challenge</div><div class="drill-det">Push max distance on a flat trajectory. 15-18 throws. Beat previous max each session.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+outfield+long+toss+challenge+arm+strength+distance" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Velocity Pulldowns</div><div class="drill-det">Walk in from max distance, throw 5 max-effort throws from 60 ft. Radar here if available.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+pulldown+throws+velocity+training+long+toss" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb ba">REC</div><div><div class="drill-name">Post-Session Stretches</div><div class="drill-det">Cross-body, sleeper stretch, forearm flexor. 5 min.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+sleeper+stretch+cross+body+shoulder+after+throwing" target="_blank">&#9654; YouTube</a></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-block">
+    <div class="phase-tag tl">Phase 3</div>
+    <div class="phase-title">Load + Velocity Spike</div>
+    <div class="phase-desc">Weeks 7-9. Maximum training stimulus. Heavier overload (450g), higher-intent throws, pulldown velocity reps. Arm care is critical. Biggest gains occur here (+4-7 mph cumulative). Velocity check mandatory at Week 7 start.</div>
+    <div class="wk-badge">WEEKS 7-9</div>
+    <div class="wk-note">High-intent sessions. Monitor arm fatigue. No throwing through sharp pain.</div>
+    <div class="sess-grid">
+      <div class="sess-card">
+        <div class="sess-hdr"><div class="sess-day">Day A &mdash; Mon / Thu (Max Load)</div><div class="sess-dur">30 MIN</div></div>
+        <div class="sess-body">
+          <div class="drill"><div class="bb ba">ARM</div><div><div class="drill-name">Full Arm Care + Activation</div><div class="drill-det">Band circuit + dynamic stretching. 7 min. Non-negotiable at this phase.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+resistance+band+shoulder+arm+care+warmup" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bu">100g</div><div><div class="drill-name">Underload Speed Primer</div><div class="drill-det">2x6 at 100% intent. Primes the nervous system before loading.</div><a class="yt" href="https://www.youtube.com/results?search_query=underload+softball+throwing+arm+speed+velocity" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bh">450g</div><div><div class="drill-name">Heavy Overload Crow-Hops</div><div class="drill-det">3x6 at 80% effort. Full mechanics. Deceleration strength focus.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+overload+weighted+ball+crow+hop+throws+velocity" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Max-Intent Velocity Throws</div><div class="drill-det">3x5 at 100% from 55 ft. Radar every session if possible.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+max+intent+velocity+throws+outfield+arm" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bh">450g</div><div><div class="drill-name">Wall Rebounds</div><div class="drill-det">3x8. Build deceleration muscles. 10 ft from wall.</div><a class="yt" href="https://www.youtube.com/results?search_query=plyocare+wall+rebounds+arm+strength+softball+baseball" target="_blank">&#9654; YouTube</a></div></div>
+        </div>
+      </div>
+      <div class="sess-card">
+        <div class="sess-hdr"><div class="sess-day">Day B &mdash; Tue / Fri (Intent + Distance)</div><div class="sess-dur">30 MIN</div></div>
+        <div class="sess-body">
+          <div class="drill"><div class="bb ba">ARM</div><div><div class="drill-name">Arm Care Warmup</div><div class="drill-det">7 min full protocol.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+arm+care+warmup+rotator+cuff+band" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bu">100g</div><div><div class="drill-name">Underload Lawnmower + Pivot</div><div class="drill-det">2x8. Maintain mechanics even at max speed.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+lawnmower+drill+throwing+arm+path+mechanics" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Extended Long Toss</div><div class="drill-det">Challenge to 90-120 ft on a line. 15 throws.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+outfield+long+toss+arm+strength+distance+training" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Pulldown Velocity Reps</div><div class="drill-det">Walk in from 90-100 ft, throw 6 max-effort throws from 55-60 ft. Velocity measurement drill.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+long+toss+pulldowns+velocity+training" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb ba">REC</div><div><div class="drill-name">Post-Session Recovery</div><div class="drill-det">Full stretch routine. Cross-body, sleeper, forearm. 7 min.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+sleeper+stretch+cross+body+shoulder+after+throwing" target="_blank">&#9654; YouTube</a></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-block">
+    <div class="phase-tag tp">Phase 4</div>
+    <div class="phase-title">Peak + Transfer</div>
+    <div class="phase-desc">Week 10. Reduce overload volume. Let training adapt and transfer. Prioritize regular-ball intent throws and field simulation. Final velocity test Friday of Week 10.</div>
+    <div class="wk-badge">WEEK 10</div>
+    <div class="wk-note">Deload volume, peak intent. Final radar test Friday.</div>
+    <div class="sess-grid">
+      <div class="sess-card">
+        <div class="sess-hdr"><div class="sess-day">Day A + C &mdash; Mon / Wed</div><div class="sess-dur">25 MIN</div></div>
+        <div class="sess-body">
+          <div class="drill"><div class="bb ba">ARM</div><div><div class="drill-name">Arm Care + Activation</div><div class="drill-det">Full protocol. 7 min.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+resistance+band+shoulder+arm+care+warmup" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bu">100g</div><div><div class="drill-name">Underload Speed Throws</div><div class="drill-det">2x6 max intent. Remind the arm what fast feels like.</div><a class="yt" href="https://www.youtube.com/results?search_query=underload+softball+throwing+arm+speed+velocity" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Max Intent Flat Ground</div><div class="drill-det">3x6 at 100% from 55-60 ft. Full crow-hop. Every throw is a test rep.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+max+intent+velocity+throws+outfield+arm" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Field Simulation Throws</div><div class="drill-det">CF to home, CF to 2B cutoff. 8-10 reps. Full game-speed intent.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+outfield+game+simulation+throws+center+field" target="_blank">&#9654; YouTube</a></div></div>
+        </div>
+      </div>
+      <div class="sess-card">
+        <div class="sess-hdr"><div class="sess-day">Day B + D &mdash; Tue / Fri</div><div class="sess-dur">25-30 MIN</div></div>
+        <div class="sess-body">
+          <div class="drill"><div class="bb ba">ARM</div><div><div class="drill-name">Arm Care Warmup</div><div class="drill-det">Full protocol.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+arm+care+warmup+rotator+cuff+band" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb br">REG</div><div><div class="drill-name">Long Toss + Pulldowns</div><div class="drill-det">Build to max distance, walk in, fire 5 max-effort pulldown throws from 60 ft.</div><a class="yt" href="https://www.youtube.com/results?search_query=softball+long+toss+pulldowns+velocity+training" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bu">100g</div><div><div class="drill-name">Final Speed Reps</div><div class="drill-det">3x5 underload at max intent. Feel the new arm.</div><a class="yt" href="https://www.youtube.com/results?search_query=underload+softball+throwing+arm+speed+velocity" target="_blank">&#9654; YouTube</a></div></div>
+          <div class="drill"><div class="bb bt">TEST</div><div><div class="drill-name">FINAL VELOCITY TEST &mdash; Friday Week 10</div><div class="drill-det">Radar gun or Pocket Radar. 5 max-effort throws from 55 ft with full crow-hop. Record peak and average. Log in Velocity Log tab.</div><a class="yt" href="https://www.youtube.com/results?search_query=pocket+radar+softball+velocity+measurement+how+to" target="_blank">&#9654; Pocket Radar Setup</a></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== WEEK BY WEEK ===== -->
+<div class="panel" id="panel-schedule">
+  <div class="alert">Velocity check-ins recommended at end of Weeks 3, 6, 9, and 10. Use the same radar setup every time for consistent data.</div>
+  <div class="card" style="padding:0;overflow:hidden;">
+    <table class="sched-table">
+      <thead>
+        <tr>
+          <th style="width:65px">Week</th>
+          <th style="width:110px">Phase</th>
+          <th>Focus</th>
+          <th style="width:200px">Ball Weights</th>
+          <th style="width:150px">Volume</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><div class="wn">1</div></td><td><span class="ph-f" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Foundation</span></td><td><div class="wf">Wrist flips, pivot pickoff, basic crow-hop at 30-60 ft. Arm path checkpoints. 70-80% effort.</div></td><td><div class="chips"><span class="chip cu">100g</span><span class="chip cr">Regular</span></div></td><td class="wv">4 sessions ~60 throws</td></tr>
+        <tr><td><div class="wn">2</div></td><td><span class="ph-f" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Foundation</span></td><td><div class="wf">Lawnmower drill, long toss to 75 ft, glove arm emphasis. Bump effort to 80-85%.</div></td><td><div class="chips"><span class="chip cu">100g</span><span class="chip cr">Regular</span></div></td><td class="wv">4 sessions ~65 throws</td></tr>
+        <tr><td><div class="wn">3</div></td><td><span class="ph-f" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Foundation</span></td><td><div class="wf">Week 2 drills at 90% intent. Push long toss max. <strong style="color:var(--teal)">Velocity check end of week.</strong></div></td><td><div class="chips"><span class="chip cu">100g</span><span class="chip cr">Regular</span></div></td><td class="wv">4 sessions ~70 throws</td></tr>
+        <tr><td><div class="wn">4</div></td><td><span class="ph-b" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Build</span></td><td><div class="wf">Introduce 250g overload. 2:1 ratio begins. First pulldown velocity reps.</div></td><td><div class="chips"><span class="chip cu">100g</span><span class="chip cr">Regular</span><span class="chip co">250g</span></div></td><td class="wv">4 sessions ~65 throws</td></tr>
+        <tr><td><div class="wn">5</div></td><td><span class="ph-b" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Build</span></td><td><div class="wf">Add 450g wall rebounds. Increase overload volume. Push long toss distance.</div></td><td><div class="chips"><span class="chip cu">100g</span><span class="chip cr">Regular</span><span class="chip co">250g</span><span class="chip ch">450g</span></div></td><td class="wv">4 sessions ~65 throws</td></tr>
+        <tr><td><div class="wn">6</div></td><td><span class="ph-b" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Build</span></td><td><div class="wf">Max intent across all drills. <strong style="color:var(--teal)">Velocity check end of week.</strong> Expect +1-3 mph from baseline.</div></td><td><div class="chips"><span class="chip cu">100g</span><span class="chip cr">Regular</span><span class="chip co">250g</span><span class="chip ch">450g</span></div></td><td class="wv">4 sessions ~70 throws</td></tr>
+        <tr><td><div class="wn">7</div></td><td><span class="ph-l" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Load</span></td><td><div class="wf"><strong style="color:var(--teal)">Velocity check at start.</strong> 450g crow-hops. Max arm speed intent. Monitor fatigue.</div></td><td><div class="chips"><span class="chip cu">100g</span><span class="chip cr">Regular</span><span class="chip co">250g</span><span class="chip ch">450g</span></div></td><td class="wv">4 sessions ~60 throws</td></tr>
+        <tr><td><div class="wn">8</div></td><td><span class="ph-l" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Load</span></td><td><div class="wf">High volume overload. Extended long toss to 90-120 ft. Pulldowns every Day B session.</div></td><td><div class="chips"><span class="chip cu">100g</span><span class="chip cr">Regular</span><span class="chip co">250g</span><span class="chip ch">450g</span></div></td><td class="wv">4 sessions ~60 throws</td></tr>
+        <tr><td><div class="wn">9</div></td><td><span class="ph-l" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Load</span></td><td><div class="wf">Final heavy week. Max-effort pulldowns every session. <strong style="color:var(--teal)">Velocity check end of week.</strong> Expect +4-7 mph from baseline.</div></td><td><div class="chips"><span class="chip cu">100g</span><span class="chip cr">Regular</span><span class="chip co">250g</span><span class="chip ch">450g</span></div></td><td class="wv">4 sessions ~60 throws</td></tr>
+        <tr><td><div class="wn">10</div></td><td><span class="ph-p" style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Peak</span></td><td><div class="wf">Deload volume, peak intent. Regular ball only. Field simulation. <strong style="color:var(--teal)">FINAL VELOCITY TEST Friday.</strong></div></td><td><div class="chips"><span class="chip cu">100g</span><span class="chip cr">Regular</span></div></td><td class="wv">4 sessions ~45 throws</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== VELOCITY LOG ===== -->
+<div class="panel" id="panel-log">
+  <div class="card" style="margin-bottom:18px;">
+    <div class="sec-title">Record a Velocity Reading</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Log every radar reading here. Measure at the end of Day B pulldown reps for consistency. Baseline is 51.8 mph.</div>
+    <div class="log-form">
+      <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="log-date"></div>
+      <div class="fg"><div class="fl">Velocity (MPH)</div><input type="number" class="fi" id="log-vel" placeholder="e.g. 53.2" step="0.1" min="40" max="80"></div>
+      <div class="fg"><div class="fl">Week</div>
+        <select class="fi" id="log-week">
+          <option value="">Select week...</option>
+          <option>Week 1</option><option>Week 2</option><option>Week 3</option>
+          <option>Week 4</option><option>Week 5</option><option>Week 6</option>
+          <option>Week 7</option><option>Week 8</option><option>Week 9</option><option>Week 10</option>
+        </select>
+      </div>
+      <button class="btn" onclick="logVelocity()">+ Log Reading</button>
+    </div>
+    <table class="log-tbl">
+      <thead><tr><th>Date</th><th>Week</th><th>Velocity</th><th>Gain vs Baseline</th><th>Progress to Goal</th></tr></thead>
+      <tbody id="log-tbody"><tr><td colspan="5" class="empty">No readings logged yet. Enter your first reading after Week 3.</td></tr></tbody>
+    </table>
+  </div>
+  <div class="chart-box">
+    <div class="chart-title">Velocity Trend</div>
+    <div class="chart-sub">Visual tracking across the 10-week program. Goal line at 61.8 mph.</div>
+    <svg id="vel-chart" viewBox="0 0 900 230" width="100%" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+      <defs><linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3ecfb2"/><stop offset="100%" stop-color="#e8b84b"/></linearGradient></defs>
+      <line x1="60" y1="20" x2="880" y2="20" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="60" y1="65" x2="880" y2="65" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="60" y1="110" x2="880" y2="110" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="60" y1="155" x2="880" y2="155" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <line x1="60" y1="200" x2="880" y2="200" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+      <text x="50" y="23" font-size="10" fill="#7a8090" text-anchor="end" font-family="DM Mono">70</text>
+      <text x="50" y="68" font-size="10" fill="#7a8090" text-anchor="end" font-family="DM Mono">65</text>
+      <text x="50" y="113" font-size="10" fill="#7a8090" text-anchor="end" font-family="DM Mono">60</text>
+      <text x="50" y="158" font-size="10" fill="#7a8090" text-anchor="end" font-family="DM Mono">55</text>
+      <text x="50" y="203" font-size="10" fill="#7a8090" text-anchor="end" font-family="DM Mono">50</text>
+      <line x1="60" y1="83" x2="880" y2="83" stroke="#3ecfb2" stroke-width="1" stroke-dasharray="5,4" opacity="0.5"/>
+      <text x="884" y="87" font-size="9" fill="#3ecfb2" font-family="DM Mono">GOAL</text>
+      <text x="60" y="218" font-size="9" fill="#7a8090" text-anchor="middle" font-family="DM Mono">BASE</text>
+      <text x="225" y="218" font-size="9" fill="#7a8090" text-anchor="middle" font-family="DM Mono">W3</text>
+      <text x="390" y="218" font-size="9" fill="#7a8090" text-anchor="middle" font-family="DM Mono">W6</text>
+      <text x="638" y="218" font-size="9" fill="#7a8090" text-anchor="middle" font-family="DM Mono">W9</text>
+      <text x="870" y="218" font-size="9" fill="#7a8090" text-anchor="middle" font-family="DM Mono">W10</text>
+      <circle cx="60" cy="155" r="5" fill="#e8b84b"/>
+      <g id="chart-line"></g>
+    </svg>
+  </div>
+</div>
+
+<!-- ===== ARM CARE + TIPS ===== -->
+<div class="panel" id="panel-tips">
+  <div class="alert">These principles are drawn from research-backed softball throwing programs. Mechanics first, load second. Never throw through sharp pain.</div>
+  <div class="tips-grid">
+    <div class="tip-card"><div class="tip-icon">⚡</div><div class="tip-title">Intent Is Everything</div><div class="tip-body">Throwing at <strong>90-100% intent</strong> is required to build velocity. Lazy throws build lazy arm speed. Every max-effort throw should feel like Taylor is throwing through the mitt. <strong>Cue: "Rip through the ball."</strong></div></div>
+    <div class="tip-card"><div class="tip-icon">⚖️</div><div class="tip-title">Overload + Underload Balance</div><div class="tip-body">Use the <strong>2:1 ratio</strong>: two heavy throws per regular-ball throw. Underload (100g) trains fast-twitch arm speed. Overload (250-450g) builds strength and deceleration. Together they expand the velocity envelope on both ends.</div></div>
+    <div class="tip-card"><div class="tip-icon">🦵</div><div class="tip-title">Velocity Starts With the Legs</div><div class="tip-body">Outfield throwing velocity is generated <strong>ground up</strong>: foot, hip, torso, shoulder, arm. The crow-hop must be aggressive and rhythmic. Uphill shoulders, explosive hip fire, and a long stride all add mph before the arm ever fires.</div></div>
+    <div class="tip-card"><div class="tip-icon">🎯</div><div class="tip-title">Glove Arm is a Velocity Tool</div><div class="tip-body">The glove arm acts as a <strong>crank</strong>. Pulled powerfully back and down through hip rotation, it accelerates the throwing arm. Most youth players leave 2-4 mph here. <strong>Cue: "Pull the glove into your hip."</strong></div></div>
+    <div class="tip-card"><div class="tip-icon">🔄</div><div class="tip-title">Pronation Means a Safe Arm</div><div class="tip-body">Teach Taylor to <strong>pronate through release</strong> (thumb rotates down after release). This is both a velocity mechanism and injury prevention. Supination bleeds speed and stresses the elbow. <strong>Cue: "Show your thumb to the ground."</strong></div></div>
+    <div class="tip-card"><div class="tip-icon">📏</div><div class="tip-title">Long Toss on a Line</div><div class="tip-body">Long toss works best on a <strong>low, flat trajectory</strong> a cutoff man could intercept. High-arc long toss increases elbow stress without the velocity benefit. Chase distance on a line, not height.</div></div>
+    <div class="tip-card"><div class="tip-icon">🛡️</div><div class="tip-title">Arm Care is Non-Negotiable</div><div class="tip-body"><strong>Before every session:</strong> band external rotations 2x15, internal rotations 2x12, Ws 2x12, shoulder circles. <strong>After every session:</strong> cross-body stretch, sleeper stretch, forearm flexor and extensor. Skipping warmup means skipping gains and risking injury.</div></div>
+    <div class="tip-card"><div class="tip-icon">📊</div><div class="tip-title">Measure Consistently</div><div class="tip-body">Same setup every reading: <strong>full crow-hop from 55-60 ft on flat ground from the pulldown position.</strong> Use Pocket Radar or a radar gun. Inconsistent conditions create misleading data. Log every reading in the Velocity Log tab.</div></div>
+    <div class="tip-card"><div class="tip-icon">🚫</div><div class="tip-title">Red Flags — Stop and Rest</div><div class="tip-body">If Taylor reports <strong>sharp elbow pain, numbness in fingers, or shoulder pain with arm elevation</strong> — stop immediately. Rest 3-5 days. Consult a sports medicine provider. Mild forearm soreness is normal. Sharp localized pain is not.</div></div>
+  </div>
+  <div style="margin-top:20px;">
+    <div class="sec-title">Recommended YouTube Channels</div>
+    <div class="yt-res">
+      <a class="yt-card" href="https://www.youtube.com/@HighLevelThrowing" target="_blank"><div class="yt-tag">Austin Wasserman</div><div class="yt-title">High Level Throwing</div><div class="yt-desc">Complete throwing system. Pivot pickoff, warm-up sequences, long toss protocols built for softball.</div></a>
+      <a class="yt-card" href="https://www.youtube.com/results?search_query=dan+blewett+softball+throwing+velocity+mechanics" target="_blank"><div class="yt-tag">Dan Blewett</div><div class="yt-title">Softball Throwing Mechanics</div><div class="yt-desc">Swing shuffle, lawnmower drill, glove arm cues. Excellent outfield-specific content.</div></a>
+      <a class="yt-card" href="https://www.youtube.com/results?search_query=softball+outfield+throwing+velocity+drills+youth+13u" target="_blank"><div class="yt-tag">General Search</div><div class="yt-title">Youth Outfield Velocity Drills</div><div class="yt-desc">Age-appropriate outfield throwing and velocity drills for 13U players.</div></a>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ===== STATE =====
+var velLog = [];
+var checks = {};
+try { velLog = JSON.parse(localStorage.getItem('t_vel') || '[]'); } catch(e){}
+try { checks = JSON.parse(localStorage.getItem('t_checks') || '{}'); } catch(e){}
+
+// ===== TABS =====
+var TABS = ['dashboard','program','schedule','log','tips'];
+TABS.forEach(function(id) {
+  var tabEl = document.getElementById('tab-' + id);
+  var panelEl = document.getElementById('panel-' + id);
+  if (!tabEl || !panelEl) return;
+  tabEl.addEventListener('click', function() {
+    TABS.forEach(function(t) {
+      document.getElementById('tab-' + t).classList.remove('active');
+      document.getElementById('panel-' + t).classList.remove('active');
+    });
+    tabEl.classList.add('active');
+    panelEl.classList.add('active');
+  });
+});
+
+// ===== WEEK GRID =====
+var phaseMap = {
+  1:'f',2:'f',3:'f',
+  4:'b',5:'b',6:'b',
+  7:'l',8:'l',9:'l',
+  10:'p'
+};
+var phaseLabel = {f:'Foundation',b:'Build',l:'Load',p:'Peak'};
+
+function buildGrid() {
+  var g = document.getElementById('week-grid');
+  if (!g) return;
+  g.innerHTML = '';
+  for (var w = 1; w <= 10; w++) {
+    var ph = phaseMap[w];
+    var wc = checks[w] || [];
+    var card = document.createElement('div');
+    card.className = 'wk-card' + (w === 1 ? ' cur' : '');
+    var dots = '';
+    for (var d = 0; d < 4; d++) {
+      dots += '<div class="dot' + (wc.indexOf(d) > -1 ? ' on' : '') + '" data-w="' + w + '" data-d="' + d + '"></div>';
+    }
+    card.innerHTML = (w === 1 ? '<div class="cur-badge">CURRENT</div>' : '') +
+      '<div class="wk-num">W' + w + '</div>' +
+      '<div class="wk-ph ph-' + ph + '">' + phaseLabel[ph] + '</div>' +
+      '<div class="wk-dots">' + dots + '</div>';
+    g.appendChild(card);
+  }
+  g.querySelectorAll('.dot').forEach(function(dot) {
+    dot.addEventListener('click', function() {
+      var wk = parseInt(dot.getAttribute('data-w'));
+      var di = parseInt(dot.getAttribute('data-d'));
+      var arr = checks[wk] ? checks[wk].slice() : [];
+      var pos = arr.indexOf(di);
+      if (pos > -1) arr.splice(pos,1); else arr.push(di);
+      checks[wk] = arr;
+      try { localStorage.setItem('t_checks', JSON.stringify(checks)); } catch(e){}
+      buildGrid();
+    });
+  });
+}
+
+// ===== VELOCITY LOG =====
+function logVelocity() {
+  var date = document.getElementById('log-date').value;
+  var vel = parseFloat(document.getElementById('log-vel').value);
+  var week = document.getElementById('log-week').value;
+  if (!date || isNaN(vel) || !week) { alert('Please fill in all three fields.'); return; }
+  velLog.push({date:date, vel:vel, week:week});
+  velLog.sort(function(a,b){ return new Date(a.date)-new Date(b.date); });
+  try { localStorage.setItem('t_vel', JSON.stringify(velLog)); } catch(e){}
+  document.getElementById('log-vel').value = '';
+  renderLog();
+  renderChart();
+}
+
+function renderLog() {
+  var tbody = document.getElementById('log-tbody');
+  if (!tbody) return;
+  if (!velLog.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No readings logged yet. Enter your first reading after Week 3.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = velLog.map(function(r) {
+    var gain = (r.vel - 51.8).toFixed(1);
+    var gainStr = gain > 0 ? '+'+gain : ''+gain;
+    var gainCls = parseFloat(gain) > 0 ? 'gup' : 'gsame';
+    var pct = Math.min(100,Math.max(0,((r.vel-51.8)/10)*100)).toFixed(0);
+    var vc = r.vel>=61.8 ? 'var(--teal)' : r.vel>=56 ? 'var(--gold)' : 'var(--text)';
+    return '<tr>' +
+      '<td style="color:var(--muted)">'+r.date+'</td>' +
+      '<td><span style="font-size:12px;padding:2px 8px;border-radius:4px;background:rgba(62,207,178,0.1);color:var(--teal)">'+r.week+'</span></td>' +
+      '<td><span class="vnum" style="color:'+vc+'">'+r.vel+'</span> <span style="font-size:12px;color:var(--muted)">mph</span></td>' +
+      '<td><span class="gbadge '+gainCls+'">'+gainStr+' mph</span></td>' +
+      '<td><div class="mprog"><div class="mprog-fill" style="width:'+pct+'%"></div></div><span style="font-size:12px;color:var(--muted)">'+pct+'%</span></td>' +
+      '</tr>';
+  }).join('');
+}
+
+function renderChart() {
+  var g = document.getElementById('chart-line');
+  if (!g) return;
+  g.innerHTML = '';
+  if (!velLog.length) return;
+  var minV=48,maxV=72,x0=60,x1=870,y0=200,y1=20;
+  function vY(v){ return y0-((v-minV)/(maxV-minV))*(y0-y1); }
+  function wX(wk){ var n=parseInt(wk.replace('Week ','')); return x0+((n-1)/10)*(x1-x0); }
+  var pts = [{x:x0,y:vY(51.8)}];
+  velLog.forEach(function(r){ pts.push({x:wX(r.week),y:vY(r.vel)}); });
+  if (pts.length>1) {
+    var d = pts.map(function(p,i){ return (i===0?'M':'L')+p.x+' '+p.y; }).join(' ');
+    var path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',d); path.setAttribute('fill','none');
+    path.setAttribute('stroke','url(#cg)'); path.setAttribute('stroke-width','2.5');
+    path.setAttribute('stroke-linecap','round');
+    g.appendChild(path);
+  }
+  pts.forEach(function(p,i){
+    var c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',p.x); c.setAttribute('cy',p.y); c.setAttribute('r','5');
+    c.setAttribute('fill', i===0 ? '#e8b84b' : '#3ecfb2');
+    g.appendChild(c);
+  });
+}
+
+// ===== INIT =====
+try { document.getElementById('log-date').valueAsDate = new Date(); } catch(e){}
+buildGrid();
+renderLog();
+renderChart();
+</script>
+</body>
+</html>
